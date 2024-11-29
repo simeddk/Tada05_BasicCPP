@@ -1,10 +1,10 @@
-#include "CStaticMeshBase_Cube.h"
+#include "CStaticMeshBase_Sphere.h"
 #include "Materials/MaterialInstanceConstant.h"
 
-ACStaticMeshBase_Cube::ACStaticMeshBase_Cube()
+ACStaticMeshBase_Sphere::ACStaticMeshBase_Sphere()
 {
 	//Get Mesh Asset
-	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/StaticMeshes/SM_Cube"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/StaticMeshes/SM_Sphere"));
 	if (MeshAsset.Succeeded())
 	{
 		MeshComp->SetStaticMesh(MeshAsset.Object);

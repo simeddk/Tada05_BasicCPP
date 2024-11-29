@@ -12,6 +12,7 @@ class BASICCPP_API ACStaticMeshBase : public AActor
 public:	
 	ACStaticMeshBase();
 
+protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 };
