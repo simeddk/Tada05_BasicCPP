@@ -27,4 +27,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "ClassReference")
 	TSubclassOf<ACStaticMeshBase> ClassesToSpawn[4];
 
+private:
+	ACStaticMeshBase* SpawendObjects[4];
+
 };
