@@ -3,6 +3,7 @@
 
 ACLogTest::ACLogTest()
 {
+	PrimaryActorTick.bCanEverTick = true;
 
 }
 
@@ -17,5 +18,24 @@ void ACLogTest::BeginPlay()
 	CLog::Print("Hell World");
 	CLog::Print(GetActorLocation());
 	CLog::Print(GetActorRotation());
-	//Todo. 빌드 아직 안함
+
+	CLog::Log(1000);
+	CLog::Log(PI);
+	CLog::Log("Hell World");
+	CLog::Log(FVector(100, 100, 100));
+	CLog::Log(FRotator(90, 90, 90));
+	CLog::Log(__FILE__);
+	//CLog::Log(__FUNCTION__, __LINE__);
+	PrintLine();
+	
+}
+
+void ACLogTest::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	RunningTime += DeltaTime;
+	CLog::Print(RunningTime, 7);
+
+	CLog::Print(GetWorld()->TimeSeconds, 8, 10.f, FColor::Red);
 }
