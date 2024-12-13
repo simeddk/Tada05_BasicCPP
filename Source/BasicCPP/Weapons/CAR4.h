@@ -25,9 +25,17 @@ public:
 public:
 	FORCEINLINE bool IsEquipped() { return bEquipped; }
 	FORCEINLINE bool IsPlayingMontage() { return bPlayingMontage; }
+	FORCEINLINE bool IsAiming() { return bAiming; }
+
+	//Todo. Set함수는 화요일
 
 	void Equip();
+	void Begin_Equip();
+	void End_Equip();
+
 	void Unequip();
+	void Begin_Unequip();
+	void End_Unequip();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Socket")
@@ -51,4 +59,5 @@ private:
 
 	bool bEquipped;
 	bool bPlayingMontage;
+	bool bAiming;
 };

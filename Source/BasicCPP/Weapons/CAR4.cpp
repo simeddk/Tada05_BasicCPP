@@ -38,6 +38,7 @@ void ACAR4::BeginPlay()
 	Super::BeginPlay();
 	
 	OwnerCharacter = Cast<ACharacter>(GetOwner());
+
 	AttachToComponent
 	(
 		OwnerCharacter->GetMesh(),
@@ -57,15 +58,50 @@ void ACAR4::Equip()
 	if (bEquipped) return;
 	if (bPlayingMontage) return;
 
-	PrintLine();
-
 	bEquipped = true;
 	bPlayingMontage = true;
 
 	OwnerCharacter->PlayAnimMontage(EquipMontage);
 }
 
+void ACAR4::Begin_Equip()
+{
+	AttachToComponent
+	(
+		OwnerCharacter->GetMesh(),
+		FAttachmentTransformRules(EAttachmentRule::KeepRelative, true),
+		HandSocket
+	);
+}
+
+void ACAR4::End_Equip()
+{
+	bPlayingMontage = false;
+}
+
 void ACAR4::Unequip()
 {
+	if (!bEquipped) return;
+	if (bPlayingMontage) return;
+
+	bEquipped = false;
+	bPlayingMontage = true;
+
+	OwnerCharacter->PlayAnimMontage(UnequipMontage);
+}
+
+void ACAR4::Begin_Unequip()
+{
+	AttachToComponent
+	(
+		OwnerCharacter->GetMesh(),
+		FAttachmentTransformRules(EAttachmentRule::KeepRelative, true),
+		HolsterSocket
+	);
+}
+
+void ACAR4::End_Unequip()
+{
+	bPlayingMontage = false;
 }
 
