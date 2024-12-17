@@ -27,7 +27,9 @@ public:
 	FORCEINLINE bool IsPlayingMontage() { return bPlayingMontage; }
 	FORCEINLINE bool IsAiming() { return bAiming; }
 
-	//Todo. Set함수는 화요일
+	void Begin_Aim();
+	void End_Aim();
+
 
 	void Equip();
 	void Begin_Equip();
