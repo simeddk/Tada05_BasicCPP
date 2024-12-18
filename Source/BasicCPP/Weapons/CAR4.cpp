@@ -1,7 +1,11 @@
 #include "CAR4.h"
+#include "DrawDebugHelpers.h"
 #include "Utilities/CLog.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/CWeaponInterface.h"
+
+static TAutoConsoleVariable<bool> CVarDebugLine(TEXT("Tada.DebugLine"), false, TEXT("Enable draw aim line"), ECVF_Cheat);
 
 ACAR4::ACAR4()
 {
@@ -51,6 +55,35 @@ void ACAR4::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!bAiming) return;
+
+	ICWeaponInterface* OwenrInterface = Cast<ICWeaponInterface>(OwnerCharacter);
+	if (!OwenrInterface) return;
+	
+	FVector Start, End, Direction;
+	OwenrInterface->GetAimInfo(Start, End, Direction);
+
+	bool bDrawDebug = CVarDebugLine.GetValueOnGameThread();
+	if (bDrawDebug)
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, -1.f, 0, 3.f);
+	}
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.AddIgnoredActor(OwnerCharacter);
+
+	FHitResult Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_PhysicsBody, QueryParams))
+	{
+		if (Hit.GetComponent()->IsSimulatingPhysics())
+		{
+			OwenrInterface->OnTarget();
+			return;
+		}
+	}
+
+	OwenrInterface->OffTarget();
 }
 
 void ACAR4::Begin_Aim()
@@ -113,5 +146,55 @@ void ACAR4::Begin_Unequip()
 void ACAR4::End_Unequip()
 {
 	bPlayingMontage = false;
+}
+
+void ACAR4::Begin_Fire()
+{
+	if (!bEquipped) return;
+	if (bPlayingMontage) return;
+	if (!bAiming) return;
+	if (bFiring) return;
+
+	bFiring = true;
+
+	Firing();
+}
+
+void ACAR4::End_Fire()
+{
+	bFiring = false;
+}
+
+void ACAR4::Firing()
+{
+	//LineTrace for Visiblity
+	//->SimulatePhy => Add Impulse
+	//-> Cosmetic
+
+	ICWeaponInterface* OwenrInterface = Cast<ICWeaponInterface>(OwnerCharacter);
+	if (!OwenrInterface) return;
+
+	FVector Start, End, Direction;
+	OwenrInterface->GetAimInfo(Start, End, Direction);
+
+	bool bDrawDebug = CVarDebugLine.GetValueOnGameThread();
+	if (bDrawDebug)
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, -1.f, 0, 3.f);
+	}
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.AddIgnoredActor(OwnerCharacter);
+
+	FHitResult Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_Visibility, QueryParams))
+	{
+		if (Hit.GetComponent()->IsSimulatingPhysics())
+		{
+			Hit.GetComponent()->AddImpulseAtLocation(Direction * 3000.f, OwnerCharacter->GetActorLocation());
+			//Todo. 쏴서 넘어지는지 보기~~
+		}
+	}
 }
 

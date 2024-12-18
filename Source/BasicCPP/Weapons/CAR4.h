@@ -26,10 +26,10 @@ public:
 	FORCEINLINE bool IsEquipped() { return bEquipped; }
 	FORCEINLINE bool IsPlayingMontage() { return bPlayingMontage; }
 	FORCEINLINE bool IsAiming() { return bAiming; }
+	FORCEINLINE USkeletalMeshComponent* GetMeshComp() { return MeshComp; }
 
 	void Begin_Aim();
 	void End_Aim();
-
 
 	void Equip();
 	void Begin_Equip();
@@ -38,6 +38,13 @@ public:
 	void Unequip();
 	void Begin_Unequip();
 	void End_Unequip();
+
+	void Begin_Fire();
+	void End_Fire();
+
+	//Todo. 나중에 설명하겠음
+	UFUNCTION()
+	void Firing();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Socket")
@@ -62,4 +69,5 @@ private:
 	bool bEquipped;
 	bool bPlayingMontage;
 	bool bAiming;
+	bool bFiring;
 };
