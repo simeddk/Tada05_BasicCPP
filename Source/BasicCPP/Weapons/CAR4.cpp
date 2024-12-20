@@ -2,6 +2,7 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/DecalComponent.h"
 #include "GameFramework/Character.h"
 #include "Sound/SoundCue.h"
 #include "Interfaces/CWeaponInterface.h"
@@ -49,6 +50,8 @@ ACAR4::ACAR4()
 
 	HolsterSocket = "Holster_AR4";
 	HandSocket = "Hand_AR4";
+	RapidTime = 0.1f;
+	PitchSpeed = 0.2f;
 }
 
 void ACAR4::BeginPlay()
@@ -100,6 +103,11 @@ void ACAR4::Tick(float DeltaTime)
 	OwenrInterface->OffTarget();
 }
 
+void ACAR4::ToggleAutoFire()
+{
+	bFullyAuto = !bFullyAuto;
+}
+
 void ACAR4::Begin_Aim()
 {
 	bAiming = true;
@@ -108,6 +116,11 @@ void ACAR4::Begin_Aim()
 void ACAR4::End_Aim()
 {
 	bAiming = false;
+
+	if (bFullyAuto)
+	{
+		GetWorldTimerManager().ClearTimer(AutoFireTimer);
+	}
 }
 
 void ACAR4::Equip()
@@ -170,12 +183,28 @@ void ACAR4::Begin_Fire()
 	if (bFiring) return;
 
 	bFiring = true;
+	CurrentPitch = 0.f;
 
+	//Fully Auto Shot
+	if (bFullyAuto)
+	{
+		GetWorldTimerManager().SetTimer(AutoFireTimer, this, &ACAR4::Firing, RapidTime, true);
+
+
+		return;
+	}
+
+	//Single Shot
 	Firing();
 }
 
 void ACAR4::End_Fire()
 {
+	if (bFullyAuto)
+	{
+		GetWorldTimerManager().ClearTimer(AutoFireTimer);
+	}
+
 	bFiring = false;
 }
 
@@ -206,6 +235,13 @@ void ACAR4::Firing()
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, MuzzleLocation);
 	}
 
+	//Decrease Pitch
+	CurrentPitch -= PitchSpeed * GetWorld()->GetDeltaSeconds();
+	if (CurrentPitch >= -0.1f)
+	{
+		OwnerCharacter->AddControllerPitchInput(CurrentPitch);
+	}
+
 	//LineTrace
 	ICWeaponInterface* OwenrInterface = Cast<ICWeaponInterface>(OwnerCharacter);
 	if (!OwenrInterface) return;
@@ -226,6 +262,20 @@ void ACAR4::Firing()
 	FHitResult Hit;
 	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_Visibility, QueryParams))
 	{
+		FVector ImpactLocation = Hit.Location;
+		FRotator ImpactRotation = Hit.ImpactNormal.Rotation();
+
+		if (ensure(BulletHoleMaterial))
+		{
+			UDecalComponent* DecalComp = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletHoleMaterial, FVector(5), ImpactLocation, ImpactRotation, 5.f);
+			DecalComp->SetFadeScreenSize(0);
+		}
+
+		if (ensure(ImpactVFX))
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactVFX, ImpactLocation, ImpactRotation, true);
+		}
+
 		if (Hit.GetComponent()->IsSimulatingPhysics())
 		{
 			FVector ImpactDirection = (Hit.GetActor()->GetActorLocation() - OwnerCharacter->GetActorLocation()).GetSafeNormal();
